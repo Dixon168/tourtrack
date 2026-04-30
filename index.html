@@ -1094,7 +1094,7 @@ en:{
   'el-f2t':'Passenger Management','el-f2d':'Full roster per booking — name, age, gender, passport, room number. Organized by family group and room.',
   'el-f3t':'Agent Finance Tracking','el-f3d':'See exactly who sold what. Lookup by date range or by tour. Every booking tagged to the agent.',
   'el-f4t':'Real-time Availability','el-f4d':'Seat counts update the moment a booking is made. Every agent sees the same live number — no more overbooking.',
-  'el-f5t':tr('lookupTitle'),'el-f5d':'Search bookings by date range or by tour. Export to CSV. Agents see only their own, admins see everything.',
+  'el-f5t':'Booking Lookup','el-f5d':'Search bookings by date range or by tour. Export to CSV. Agents see only their own, admins see everything.',
   'el-f6t':'Multi-Merchant Platform','el-f6d':'Run multiple tour companies from one platform. Each merchant has their own data, agents, and admin.',
   'el-how-tag':'How It Works','el-how-title':'Up and running in minutes.',
   'el-ht1':'Create Your Account','el-hd1':'Contact us to get your merchant account. You get an admin login and your own workspace.',
@@ -1468,8 +1468,8 @@ var lang = localStorage.getItem('tt_lang')||'en';
 
 var TRANS_EN = {
   reports:'Reports', past:'Past Tours', bookings:'Bookings', finance:'Finance',
-  groups:'Groups', categories:tr('catsTitle'), users:'Users', agentbook:'Bookings',
-  agentfinance:tr('agentFinTitle'), signout:'Sign out', welcome:'Welcome back',
+  groups:'Groups', categories:'Categories', users:'Users', agentbook:'Bookings',
+  agentfinance:'My Finance', signout:'Sign out', welcome:'Welcome back',
   signin:'Sign In', admin:'Admin', agent:'Agent', platform:'Platform', loginWelcome:'Sign in to your account', loginSub:'Access the tour management system',
   addTour:'+ Add Tour', addCat:'+ Category', addVendor:'+ Vendor',
   exportCsv:'↓ Export', bookNow:'Book Now', detail:'Detail', edit:'Edit',
@@ -1777,7 +1777,7 @@ function buildNav(){
   const r=curUser.role;
   const tabs=r==='admin'
     ?[['tours',tr('reports')],['past',tr('past')],['booking',tr('bookings')],['booklookup',tr('lookupTitle')],['finance',tr('finance')],['categories',tr('catsTitle')],['users',tr('usersTitle')],['support',tr('support')]]
-    :[['agentbook','Bookings'],['agentlookup','Lookup'],['agentfinance',tr('agentFinTitle')]];
+    :[['agentbook',tr('agentbook')],['agentlookup',tr('lookupTitle')],['agentfinance',tr('agentfinance')]];
   document.getElementById('nav').innerHTML=tabs.map(([id,lb])=>`<button class="nav-tab${activeTab===id?' active':''}" onclick="showTab('${id}')">${lb}</button>`).join('');
 }
 function showTab(t){
