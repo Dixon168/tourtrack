@@ -850,8 +850,9 @@ from tt_categories where name = 'New England' limit 1;</div>
       <button onclick="setLangLogin('zh')" id="ll-zh" style="padding:4px 12px;font-size:12px;font-weight:600;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;background:transparent;color:var(--text2)">中文</button>
     </div>
     <div class="login-tabs">
-      <div class="login-tab active" onclick="setLTab('admin')">Admin</div>
-      <div class="login-tab" onclick="setLTab('agent')">Agent</div>
+      <div class="login-tab active" onclick="setLTab('admin')" id="ltab-admin">Admin</div>
+      <div class="login-tab" onclick="setLTab('agent')" id="ltab-agent">Agent</div>
+      <div class="login-tab" onclick="setLTab('superadmin')" id="ltab-platform" style="font-size:11px">Platform</div>
     </div>
     <div class="login-err" id="login-err"></div>
     <div class="login-field"><label id="lbl-un">Admin Username</label><input type="text" id="l-un" placeholder="Username" /></div>
@@ -1176,9 +1177,17 @@ function doPlatformLogin(){
   var pw=document.getElementById('pl-pass').value.trim();
   var err=document.getElementById('pl-err');
   if(!un||!pw){err.textContent='Please enter username and password.';err.style.display='block';return;}
-  // Redirect to app with platform tab pre-selected
-  var params='?role=platform&un='+encodeURIComponent(un)+'&pw='+encodeURIComponent(pw);
-  if(typeof show==='function'){ show('login-screen'); if(typeof setLTab==='function') setLTab('superadmin'); }
+  // Pre-fill main login form and switch to Platform tab
+  hidePlatformLogin();
+  show('login-screen');
+  setLTab('superadmin');
+  setTimeout(function(){
+    var unEl=document.getElementById('l-un');
+    var pwEl=document.getElementById('l-pw');
+    if(unEl) unEl.value=un;
+    if(pwEl) pwEl.value=pw;
+    doLogin();
+  },200);
 }
 
 // ══ CONTACT FORM ══
@@ -1614,7 +1623,8 @@ function setLangLogin(l){
 
 function setLTab(r){
   lRole=r;
-  document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&r==='admin')||(i===1&&r==='agent')));
+  document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',
+    (i===0&&r==='admin')||(i===1&&r==='agent')||(i===2&&r==='superadmin')));
   document.getElementById('lbl-un').textContent=r==='admin'?'Admin Username':'Agent Username';
   document.getElementById('lbl-pw').textContent=r==='admin'?'Password':'Login Code';
   document.getElementById('l-hint').innerHTML='';
