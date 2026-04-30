@@ -374,6 +374,7 @@ footer{padding:36px 40px;border-top:1px solid var(--border);display:flex;align-i
 #landing-screen[style*="display:none"] nav,
 #landing-screen[style*="display: none"] nav{display:none!important;}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -1222,18 +1223,20 @@ async function submitContact(){
       body:JSON.stringify({company_name:company,contact_name:contact,email:email,phone:phone,plan:plan,message:message,status:'new'})
     });
     // Send email via EmailJS
-    emailjs.init(_EJS_KEY);
+    // Init EmailJS
+    emailjs.init({publicKey: _EJS_KEY});
     await emailjs.send(_EJS_SVC, _EJS_TPL, {
-      title: 'New TourTrack Enquiry from '+company,
+      title: 'TourTrack Enquiry - '+company,
       name: contact,
       email: email,
       time: new Date().toLocaleString(),
-      message: company+' | '+contact+' | '+email+' | '+(phone||'no phone')+' | '+(plan||'no plan')+' | '+(message||'no message')
+      message: 'Co: '+company+' | '+contact+' | '+email+' | '+(phone||'N/A')+' | Plan: '+(plan||'N/A')+' | '+( message||'N/A')
     });
     document.getElementById('contact-form').style.display='none';
     document.getElementById('contact-success').style.display='block';
   } catch(e){
-    err.textContent=_lang==='zh'?'发送失败，请稍后再试。':'Failed to send. Please try again.';
+    console.error('EmailJS error:', e);
+    err.textContent=(_lang==='zh'?'发送失败：':'Send failed: ')+(e.text||e.message||'Unknown error');
     err.style.display='block';
     btn.textContent=_lang==='zh'?'发送消息 →':'Send Message →';
     btn.style.opacity='1';
