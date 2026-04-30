@@ -853,7 +853,6 @@ from tt_categories where name = 'New England' limit 1;</div>
     <div class="login-tabs">
       <div class="login-tab active" onclick="setLTab('admin')" id="ltab-admin">Admin</div>
       <div class="login-tab" onclick="setLTab('agent')" id="ltab-agent">Agent</div>
-      <div class="login-tab" onclick="setLTab('superadmin')" id="ltab-platform" style="font-size:11px">Platform</div>
     </div>
     <div class="login-err" id="login-err"></div>
     <div class="login-field"><label id="lbl-un">Admin Username</label><input type="text" id="l-un" placeholder="Username" /></div>
@@ -1666,11 +1665,12 @@ function setLangLogin(l){
 function setLTab(r){
   lRole=r;
   document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',
-    (i===0&&r==='admin')||(i===1&&r==='agent')||(i===2&&r==='superadmin')));
+    (i===0&&r==='admin')||(i===1&&r==='agent')));
   // Update tab labels for language
-  const tabs=[document.getElementById('ltab-admin'),document.getElementById('ltab-agent'),document.getElementById('ltab-platform')];
-  const labels=[tr('admin'),tr('agent'),tr('platform')];
-  tabs.forEach((t,i)=>{if(t)t.textContent=labels[i];});
+  const tabAdmin=document.getElementById('ltab-admin');
+  const tabAgent=document.getElementById('ltab-agent');
+  if(tabAdmin) tabAdmin.textContent=tr('admin');
+  if(tabAgent) tabAgent.textContent=tr('agent');
   document.getElementById('lbl-un').textContent=r==='admin'?'Admin Username':'Agent Username';
   document.getElementById('lbl-pw').textContent=r==='admin'?'Password':'Login Code';
   document.getElementById('l-hint').innerHTML='';
