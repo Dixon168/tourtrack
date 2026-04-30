@@ -1634,11 +1634,50 @@ async function doLogin(){
   const un=document.getElementById('l-un').value.trim();
   const pw=document.getElementById('l-pw').value.trim();
   if(!un||!pw){showLErr('Please enter username and code.');return;}
-  const u=users.find(x=>x.username===un&&x.code===pw);
+
+  // For Platform tab - query superadmin directly from DB
+  if(lRole==='superadmin'){
+    try{
+      const r=await sb.from('tt_users').select('*').eq('username',un).eq('code',pw).eq('role','superadmin').limit(1);
+      if(r.error||!r.data||!r.data[0]){showLErr('Invalid platform credentials.');return;}
+      curUser=r.data[0];
+      // Load ALL data for superadmin
+      await loadAll();
+      show('app');
+      buildNav();renderChip();
+      showTab('superadmin');
+      return;
+    }catch(e){showLErr('Login failed: '+e.message);return;}
+  }
+
+  // For Admin/Agent - check from already-loaded users
+  let u=users.find(x=>x.username===un&&x.code===pw);
+
+  // If not found in loaded users, try DB directly (handles merchant admin login)
+  if(!u){
+    try{
+      const r=await sb.from('tt_users').select('*').eq('username',un).eq('code',pw).limit(1);
+      if(r.data&&r.data[0]) u=r.data[0];
+    }catch(e){}
+  }
+
   if(!u){showLErr('Invalid username or code.');return;}
-  if(lRole==='admin'&&u.role!=='admin'){showLErr('This account does not have admin access.');return;}
+  if(lRole==='admin'&&u.role!=='admin'&&u.role!=='superadmin'){showLErr('This account does not have admin access.');return;}
   if(lRole==='agent'&&u.role!=='agent'&&u.role!=='user'){showLErr('This account is not an agent account.');return;}
+
+  // Check if merchant is suspended
+  if(u.merchant_id&&u.role!=='superadmin'){
+    try{
+      const ms=await sb.from('tt_merchants').select('status').eq('id',u.merchant_id).limit(1);
+      if(ms.data&&ms.data[0]&&ms.data[0].status==='suspended'){
+        showLErr('This account has been suspended. Please contact the platform administrator.');
+        return;
+      }
+    }catch(e){}
+  }
+
   curUser=u;
+  await loadAll();
   show('app');
   buildNav();renderChip();
   if(u.role==='admin') showTab('tours');
@@ -1646,17 +1685,20 @@ async function doLogin(){
 }
 function showLErr(m){const e=document.getElementById('login-err');e.textContent=m;e.style.display='block';}
 async function logout(){
-  curUser=null;
-  show('login-screen');
+  curUser=null;curMerchant=null;
+  cats=[];tours=[];hist=[];users=[];vendors=[];groups=[];groupMembers=[];merchants=[];
   document.getElementById('l-un').value='';
   document.getElementById('l-pw').value='';
-  document.getElementById('login-err').style.display='none';
+  const err=document.getElementById('login-err');
+  if(err)err.style.display='none';
+  show('landing-screen');
+  window.scrollTo(0,0);
 }
 function renderChip(){
   const r=curUser.role;
-  const bg=r==='admin'?'#2d1f6e':r==='agent'?'#1a3d26':'#1f3558';
-  const fc=r==='admin'?'#bc8cff':r==='agent'?'#3fb950':'#58a6ff';
-  const roleLabel=r==='admin'?'Administrator':r==='agent'?'Agent':'User';
+  const bg=r==='superadmin'?'#3d1a18':r==='admin'?'#2d1f6e':r==='agent'?'#1a3d26':'#1f3558';
+  const fc=r==='superadmin'?'#f85149':r==='admin'?'#bc8cff':r==='agent'?'#3fb950':'#58a6ff';
+  const roleLabel=r==='superadmin'?'Platform Admin':r==='admin'?'Administrator':r==='agent'?'Agent':'User';
   const ini=curUser.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
   document.getElementById('uchip').innerHTML=`<div class="u-avatar" style="background:${bg};color:${fc}">${ini}</div><div class="u-info"><div class="u-name">${curUser.name}</div><div class="u-role">${roleLabel}</div></div>`;
 }
