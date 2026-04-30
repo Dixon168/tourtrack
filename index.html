@@ -4468,7 +4468,10 @@ function openAddMerchant(){
 }
 function openEditMerchant(id){
   editMerchantId=id;
-  const m=merchants.find(x=>x.id===id);if(!m)return;
+  // Check allMerchants if available (includes orphan admins)
+  const allM=typeof allMerchants!=='undefined'?allMerchants:merchants;
+  const m=allM.find(x=>x.id===id)||allM.find(x=>String(x.id)===String(id));
+  if(!m)return;
   document.getElementById('mm-title').textContent='Edit Merchant';
   document.getElementById('mm-btn').textContent='Save Changes';
   document.getElementById('mm-name').value=m.name;
@@ -4487,13 +4490,24 @@ async function confirmMerchant(){
   const plan=document.getElementById('mm-plan')?.value||'starter';
   const status=document.getElementById('mm-status')?.value||'active';
   if(!name||!username||!code){alert('Please fill in all fields.');return;}
+  // Check if this is an orphan admin (id starts with 'u_')
+  const isOrphan = String(editMerchantId).startsWith('u_');
   try{
     if(editMerchantId){
-      const r=await sb.from('tt_merchants').update({name,username,code,agent_limit:agentLimit,plan,status}).eq('id',editMerchantId);
-      if(r.error)throw new Error(r.error.message);
-      // Also update the admin user for this merchant
-      await sb.from('tt_users').update({username,code}).eq('merchant_id',editMerchantId).eq('role','admin');
-      showToast('Merchant updated','var(--accent)');
+      if(isOrphan){
+        // Create proper merchant record first
+        const uid=parseInt(String(editMerchantId).replace('u_',''));
+        const r=await sb.from('tt_merchants').insert({name,username,code,status,agent_limit:agentLimit,plan}).select();
+        if(r.error)throw new Error(r.error.message);
+        const newMid=r.data[0].id;
+        await sb.from('tt_users').update({username,code,merchant_id:newMid}).eq('id',uid);
+        showToast('Merchant created for '+name,'var(--green)');
+      } else {
+        const r=await sb.from('tt_merchants').update({name,username,code,agent_limit:agentLimit,plan,status}).eq('id',editMerchantId);
+        if(r.error)throw new Error(r.error.message);
+        await sb.from('tt_users').update({username,code}).eq('merchant_id',editMerchantId).eq('role','admin');
+        showToast('Merchant updated','var(--accent)');
+      }
     } else {
       const r=await sb.from('tt_merchants').insert({name,username,code,status,agent_limit:agentLimit,plan}).select();
       if(r.error)throw new Error(r.error.message);
@@ -4524,7 +4538,8 @@ async function toggleMerchantStatus(id,status){
 
 // ══ ENTER MERCHANT AS ADMIN (support mode) ══
 async function enterMerchant(merchantId){
-  const m=merchants.find(x=>x.id===merchantId);
+  const allM=typeof allMerchants!=='undefined'?allMerchants:merchants;
+  const m=allM.find(x=>x.id===merchantId)||allM.find(x=>String(x.id)===String(merchantId));
   if(!m){alert('Merchant not found.');return;}
   if(m.status==='suspended'){alert('This merchant is suspended.');return;}
 
@@ -4552,29 +4567,30 @@ async function enterMerchant(merchantId){
   // Add return button to topbar
   showToast('👁 Viewing as '+m.name+' · Click "Exit Support" to return','var(--amber)');
 
-  // Add exit support button to topbar right
+  // Add exit support button to topbar
   setTimeout(function(){
-    const tr=document.getElementById('topbar-right-extra');
-    if(tr){
-      tr.innerHTML='<button class="btn btn-xs" style="background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber);margin-right:8px" onclick="exitMerchant()">← Exit Support</button>';
-    } else {
-      // Add to topbar
-      const chip=document.getElementById('uchip');
-      if(chip){
-        const exitBtn=document.createElement('button');
-        exitBtn.id='exit-support-btn';
-        exitBtn.className='btn btn-xs';
-        exitBtn.style.cssText='background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber);margin-right:8px';
-        exitBtn.textContent='← Exit Support';
-        exitBtn.onclick=exitMerchant;
-        chip.parentNode.insertBefore(exitBtn,chip);
-      }
+    // Remove any existing exit button first
+    const old=document.getElementById('exit-support-btn');
+    if(old) old.remove();
+    const chip=document.getElementById('uchip');
+    if(chip){
+      const exitBtn=document.createElement('button');
+      exitBtn.id='exit-support-btn';
+      exitBtn.className='btn btn-xs';
+      exitBtn.style.cssText='background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-dim);font-weight:600;margin-right:8px;padding:6px 12px;border-radius:6px;cursor:pointer;font-family:DM Sans,sans-serif;font-size:12px';
+      exitBtn.innerHTML='⬅ Return to Platform';
+      exitBtn.onclick=exitMerchant;
+      chip.parentNode.insertBefore(exitBtn,chip);
     }
-  },300);
+  },400);
 }
 
 async function exitMerchant(){
-  if(!window._superAdminSession)return;
+  if(!window._superAdminSession){
+    // Even without session, try to go back
+    showTab('superadmin');
+    return;
+  }
   // Restore superadmin session
   curUser=window._superAdminSession.user;
   curMerchant=null;
@@ -4583,10 +4599,10 @@ async function exitMerchant(){
   const exitBtn=document.getElementById('exit-support-btn');
   if(exitBtn)exitBtn.remove();
   // Reload all data as superadmin
-  await loadAll();
+  try{ await loadAll(); }catch(e){}
   buildNav();renderChip();
   showTab('superadmin');
-  showToast('Returned to Platform Admin','var(--green)');
+  showToast('✅ Returned to Platform Admin','var(--green)');
 }
 
 function openOv(id){document.getElementById(id).classList.add('open');}
