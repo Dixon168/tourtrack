@@ -1467,7 +1467,7 @@ const CAT_COLORS=['#58a6ff','#3fb950','#d29922','#f85149','#bc8cff','#39d9c7','#
 var lang = localStorage.getItem('tt_lang')||'en';
 
 var TRANS_EN = {
-  reports:'Reports', past:tr('pastTitle'), bookings:'Bookings', finance:'Finance',
+  reports:'Reports', past:'Past Tours', bookings:'Bookings', finance:'Finance',
   groups:'Groups', categories:tr('catsTitle'), users:'Users', agentbook:'Bookings',
   agentfinance:tr('agentFinTitle'), signout:'Sign out', welcome:'Welcome back',
   signin:'Sign In', admin:'Admin', agent:'Agent', platform:'Platform', loginWelcome:'Sign in to your account', loginSub:'Access the tour management system',
@@ -1484,7 +1484,7 @@ var TRANS_EN = {
   next:'Next: Add Rooms →', agentLabel:'Select Agent *',
   roomPrompt:'Room number? (e.g. 101, leave blank = TBA)',
   roomPrompt2:'Room number for this room?',
-  activeToursPage:tr('reportsTitle'), liveData:tr('reportsSub'),
+  activeToursPage:'Active Tours', liveData:'Today and upcoming · Live data',
   bookingHistory:'Booking History', includesDetails:'· Includes room & member details',
   noBookings:'No bookings yet.', noMembers:'No member details recorded.',
   groupLabel:'Group', roomLabel:'Room', paxRecorded:'pax recorded'
@@ -1776,7 +1776,7 @@ function buildNav(){
   if(badge) badge.style.display=DEMO_MODE?'inline':'none';
   const r=curUser.role;
   const tabs=r==='admin'
-    ?[['tours','Reports'],['past',tr('pastTitle')],['booking','Bookings'],['booklookup','Lookup'],['finance','Finance'],['categories',tr('catsTitle')],['users','Users'],['support',tr('support')]]
+    ?[['tours',tr('reports')],['past',tr('past')],['booking',tr('bookings')],['booklookup',tr('lookupTitle')],['finance',tr('finance')],['categories',tr('catsTitle')],['users',tr('usersTitle')],['support',tr('support')]]
     :[['agentbook','Bookings'],['agentlookup','Lookup'],['agentfinance',tr('agentFinTitle')]];
   document.getElementById('nav').innerHTML=tabs.map(([id,lb])=>`<button class="nav-tab${activeTab===id?' active':''}" onclick="showTab('${id}')">${lb}</button>`).join('');
 }
