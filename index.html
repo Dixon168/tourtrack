@@ -1771,7 +1771,7 @@ function buildNav(){
   if(badge) badge.style.display=DEMO_MODE?'inline':'none';
   const r=curUser.role;
   const tabs=r==='admin'
-    ?[['tours','Reports'],['past','Past Tours'],['booking','Bookings'],['booklookup','Lookup'],['finance','Finance'],['categories','Categories'],['users','Users']]
+    ?[['tours','Reports'],['past','Past Tours'],['booking','Bookings'],['booklookup','Lookup'],['finance','Finance'],['categories','Categories'],['users','Users'],['support','💬 Support']]
     :[['agentbook','Bookings'],['agentlookup','Lookup'],['agentfinance','My Finance']];
   document.getElementById('nav').innerHTML=tabs.map(([id,lb])=>`<button class="nav-tab${activeTab===id?' active':''}" onclick="showTab('${id}')">${lb}</button>`).join('');
 }
@@ -1793,6 +1793,7 @@ function showTab(t){
   else if(t==='sa-merchants')rSuperMerchants(mc);
   else if(t==='sa-all-bookings')rSuperBookings(mc);
   else if(t==='sa-finance')rSuperFinance(mc);
+  else if(t==='support')rSupportPage(mc);
 }
 
 // ══════════════════════════════════════════════════
@@ -4629,6 +4630,174 @@ async function exitMerchant(){
   buildNav();renderChip();
   showTab('superadmin');
   showToast('✅ Returned to Platform Admin','var(--green)');
+}
+
+// ══════════════════════════════════════════════════
+//  SUPPORT PAGE
+// ══════════════════════════════════════════════════
+function rSupportPage(mc){
+  const merchant = curMerchant||merchants.find(m=>m.id==curUser.merchant_id)||{name:curUser.name||''};
+  mc.innerHTML=`
+    <div class="page-hdr">
+      <div>
+        <div class="page-title">💬 Support & Feedback</div>
+        <div class="page-sub">We're here to help and always improving</div>
+      </div>
+    </div>
+
+    <!-- Welcome message -->
+    <div style="background:linear-gradient(135deg,var(--accent-dim),var(--bg2));border:1px solid var(--accent);border-radius:14px;padding:24px;margin-bottom:24px">
+      <div style="font-size:18px;font-weight:700;margin-bottom:8px">👋 We'd love to hear from you</div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.7">
+        TourTrack is built around your needs. If there's a feature you'd like, a workflow you want improved,
+        or a tour style you need — just let us know. We're open to listening and making changes.
+        Your feedback directly shapes how we build this platform.
+      </div>
+    </div>
+
+    <!-- Request type cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:28px">
+      <div onclick="setSupportType('bug')" id="stype-bug" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s;text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">🐛</div>
+        <div style="font-size:13px;font-weight:600">Report a Bug</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Something not working?</div>
+      </div>
+      <div onclick="setSupportType('feature')" id="stype-feature" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s;text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">✨</div>
+        <div style="font-size:13px;font-weight:600">Feature Request</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Want something new?</div>
+      </div>
+      <div onclick="setSupportType('tour')" id="stype-tour" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s;text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">🗂</div>
+        <div style="font-size:13px;font-weight:600">Tour Customization</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Change tour style/fields?</div>
+      </div>
+      <div onclick="setSupportType('other')" id="stype-other" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s;text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">💡</div>
+        <div style="font-size:13px;font-weight:600">General Feedback</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Anything else on your mind</div>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px">
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:16px;text-transform:uppercase;letter-spacing:.6px">Send us a message</div>
+
+      <div id="support-success" style="display:none;text-align:center;padding:32px 0">
+        <div style="font-size:48px;margin-bottom:12px">✅</div>
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px">Message Sent!</div>
+        <div style="color:var(--text2);font-size:14px">We'll get back to you as soon as possible.</div>
+        <button class="btn btn-primary" style="margin-top:20px" onclick="resetSupportForm()">Send Another</button>
+      </div>
+
+      <div id="support-form">
+        <div class="two-col" style="margin-bottom:14px">
+          <div class="field">
+            <label>Your Name</label>
+            <input type="text" id="sp-name" value="${curUser.name||''}" placeholder="Your name"/>
+          </div>
+          <div class="field">
+            <label>Company</label>
+            <input type="text" id="sp-company" value="${merchant.name||''}" placeholder="Your company" readonly style="background:var(--bg3);opacity:.7"/>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label>Request Type</label>
+          <select id="sp-type">
+            <option value="">— Select type —</option>
+            <option value="Bug Report">🐛 Bug Report — Something not working</option>
+            <option value="Feature Request">✨ Feature Request — Add something new</option>
+            <option value="Tour Customization">🗂 Tour Customization — Change tour style or fields</option>
+            <option value="General Feedback">💡 General Feedback — Other thoughts</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label>Subject</label>
+          <input type="text" id="sp-subject" placeholder="Brief summary of your request"/>
+        </div>
+        <div class="field" style="margin-bottom:20px">
+          <label>Details <span style="color:var(--text3);font-size:11px">— the more detail, the faster we can help</span></label>
+          <textarea id="sp-message" rows="5" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none;resize:vertical" placeholder="Describe your request in detail. For bugs, tell us what you did and what happened. For features, tell us how you'd like it to work..."></textarea>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn btn-primary" style="padding:11px 28px" onclick="submitSupport()">Send Message →</button>
+          <span id="sp-err" style="font-size:13px;color:var(--red);display:none"></span>
+        </div>
+      </div>
+    </div>`;
+
+  // Restore selected type if any
+  window._supportType = window._supportType||'';
+  if(window._supportType) setSupportType(window._supportType);
+}
+
+function setSupportType(type){
+  window._supportType=type;
+  ['bug','feature','tour','other'].forEach(t=>{
+    const el=document.getElementById('stype-'+t);
+    if(!el) return;
+    const isSelected=t===type;
+    el.style.borderColor=isSelected?'var(--accent)':'var(--border)';
+    el.style.background=isSelected?'var(--accent-dim)':'var(--bg2)';
+  });
+  const sel=document.getElementById('sp-type');
+  if(!sel) return;
+  const map={bug:'Bug Report',feature:'Feature Request',tour:'Tour Customization',other:'General Feedback'};
+  if(map[type]) sel.value=map[type];
+}
+
+function resetSupportForm(){
+  window._supportType='';
+  document.getElementById('support-success').style.display='none';
+  document.getElementById('support-form').style.display='block';
+  document.getElementById('sp-subject').value='';
+  document.getElementById('sp-message').value='';
+  document.getElementById('sp-type').value='';
+  ['bug','feature','tour','other'].forEach(t=>{
+    const el=document.getElementById('stype-'+t);
+    if(el){el.style.borderColor='var(--border)';el.style.background='var(--bg2)';}
+  });
+}
+
+async function submitSupport(){
+  const name=document.getElementById('sp-name').value.trim();
+  const company=document.getElementById('sp-company').value.trim();
+  const type=document.getElementById('sp-type').value;
+  const subject=document.getElementById('sp-subject').value.trim();
+  const message=document.getElementById('sp-message').value.trim();
+  const err=document.getElementById('sp-err');
+  err.style.display='none';
+
+  if(!subject||!message){
+    err.textContent='Please fill in subject and details.';
+    err.style.display='block';
+    return;
+  }
+
+  const btn=event.target;
+  btn.textContent='Sending...';btn.disabled=true;btn.style.opacity='.7';
+
+  try{
+    emailjs.init({publicKey:'NMKFVvA_8ljHYQZHK'});
+    await emailjs.send('service_b8lul4l','template_1hka3ni',{
+      title: '[TourTrack Support] '+subject,
+      name: name+(company?' ('+company+')':''),
+      email: 'support@tourtrack',
+      company: company,
+      contact: name,
+      phone: 'N/A',
+      plan: type||'General',
+      message: 'Type: '+(type||'General')+'\nSubject: '+subject+'\nDetails: '+message+'\nFrom: '+name+' @ '+company,
+      time: new Date().toLocaleString()
+    });
+    document.getElementById('support-form').style.display='none';
+    document.getElementById('support-success').style.display='block';
+  } catch(e){
+    console.error(e);
+    err.textContent='Send failed: '+(e.text||e.message||'Unknown error');
+    err.style.display='block';
+    btn.textContent='Send Message →';btn.disabled=false;btn.style.opacity='1';
+  }
 }
 
 function openOv(id){document.getElementById(id).classList.add('open');}
