@@ -1194,6 +1194,11 @@ function doPlatformLogin(){
 
 var _LAND_SB_URL='https://amrlspsyleulumlikebz.supabase.co';
 var _LAND_SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtcmxzcHN5bGV1bHVtbGlrZWJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwNTE3MDUsImV4cCI6MjA5MjYyNzcwNX0.P52OQSEqn5HVaqL33HIoEKI7URU6Ytzs4O3bfjJqW1E';
+// EmailJS config
+var _EJS_SVC='service_b8lul4l';
+var _EJS_TPL='template_1hka3ni';
+var _EJS_KEY='NMKFVvA_8ljHYQZHK';
+
 async function submitContact(){
   var company=document.getElementById('cf-company').value.trim();
   var contact=document.getElementById('cf-contact').value.trim();
@@ -1210,12 +1215,21 @@ async function submitContact(){
   btn.style.opacity='.7';
   btn.disabled=true;
   try{
-    var r=await fetch(_LAND_SB_URL+'/rest/v1/tt_leads',{
+    // Save to Supabase
+    await fetch(_LAND_SB_URL+'/rest/v1/tt_leads',{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':_LAND_SB_KEY,'Authorization':'Bearer '+_LAND_SB_KEY},
       body:JSON.stringify({company_name:company,contact_name:contact,email:email,phone:phone,plan:plan,message:message,status:'new'})
     });
-    if(!r.ok) throw new Error('Failed');
+    // Send email via EmailJS
+    emailjs.init(_EJS_KEY);
+    await emailjs.send(_EJS_SVC, _EJS_TPL, {
+      title: 'New TourTrack Enquiry from '+company,
+      name: contact,
+      email: email,
+      time: new Date().toLocaleString(),
+      message: company+' | '+contact+' | '+email+' | '+(phone||'no phone')+' | '+(plan||'no plan')+' | '+(message||'no message')
+    });
     document.getElementById('contact-form').style.display='none';
     document.getElementById('contact-success').style.display='block';
   } catch(e){
