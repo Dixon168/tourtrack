@@ -1665,6 +1665,13 @@ function renderChip(){
 //  NAV
 // ══════════════════════════════════════════════════
 function buildNav(){
+  if(curUser&&curUser.role==='superadmin'){
+    const tabs=[['superadmin','🏢 Dashboard'],['sa-merchants','Merchants'],['sa-all-bookings','All Bookings'],['sa-finance','Finance']];
+    document.getElementById('nav').innerHTML=tabs.map(([id,lb])=>`<button class="nav-tab${activeTab===id?' active':''}" onclick="showTab('${id}')">${lb}</button>`).join('');
+    updateLangButtons();
+    const so=document.getElementById('signout-btn');if(so)so.textContent=tr('signout');
+    return;
+  }
   var badge=document.getElementById('demo-badge');
   if(badge) badge.style.display=DEMO_MODE?'inline':'none';
   const r=curUser.role;
@@ -1687,6 +1694,10 @@ function showTab(t){
   else if(t==='agentfinance')rAgentFinance(mc);
   else if(t==='booklookup')rBookLookup(mc);
   else if(t==='agentlookup'){mc._lookupAgent=curUser.name;rBookLookup(mc);}
+  else if(t==='superadmin')rSuperDashboard(mc);
+  else if(t==='sa-merchants')rSuperMerchants(mc);
+  else if(t==='sa-all-bookings')rSuperBookings(mc);
+  else if(t==='sa-finance')rSuperFinance(mc);
 }
 
 // ══════════════════════════════════════════════════
@@ -4241,6 +4252,187 @@ async function confirmBatch(){
     alert('Failed: '+e.message);
     if(btn){btn.disabled=false;btn.textContent='✓ Create Tours';}
   }
+}
+
+// ══════════════════════════════════════════════════
+//  SUPER ADMIN — DASHBOARD (Admin Users List)
+// ══════════════════════════════════════════════════
+function rSuperDashboard(mc){
+  // Load all merchants fresh
+  const merchantCards=merchants.map(m=>{
+    const mAgents=users.filter(u=>u.merchant_id==m.id&&(u.role==='agent'||u.role==='user'));
+    const mTours=tours.filter(t=>t.merchant_id==m.id);
+    const mBookings=hist.filter(h=>h.merchant_id==m.id&&h.status!=='cancelled');
+    const limit=m.agent_limit||5;
+    const atLimit=mAgents.length>=limit;
+    const isSuspended=m.status==='suspended';
+    return`<div style="background:var(--bg2);border:1px solid ${isSuspended?'var(--red-dim)':'var(--border)'};border-radius:14px;overflow:hidden;margin-bottom:12px;opacity:${isSuspended?.6:1}">
+      <div style="padding:16px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)">
+        <!-- Avatar -->
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:20px;font-weight:800;flex-shrink:0">${m.name.charAt(0).toUpperCase()}</div>
+        <!-- Info -->
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:15px;font-weight:600">${m.name}</span>
+            <span style="font-size:11px;color:var(--text3)">@${m.username}</span>
+            <span style="background:${isSuspended?'var(--red-dim)':'var(--green-dim)'};color:${isSuspended?'var(--red)':'var(--green)'};font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px">${isSuspended?'Suspended':'Active'}</span>
+            <span style="background:var(--bg3);border:1px solid var(--border);font-size:10px;color:var(--text2);padding:2px 8px;border-radius:20px">${m.plan||'starter'}</span>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--text2)">🗂 ${mTours.length} tours</span>
+            <span style="font-size:12px;color:var(--text2)">🎫 ${mBookings.length} bookings</span>
+            <span style="font-size:12px;color:${atLimit?'var(--red)':'var(--text2)'}">👥 ${mAgents.length}/${limit} agents</span>
+          </div>
+        </div>
+        <!-- Actions -->
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-edit" onclick="openEditMerchant(${m.id})">Edit</button>
+          <button class="btn btn-ghost btn-xs" style="color:${isSuspended?'var(--green)':'var(--red)'};border-color:${isSuspended?'var(--green-dim)':'var(--red-dim)'}" onclick="toggleMerchantStatus(${m.id},'${m.status||'active'}')">${isSuspended?'Activate':'Suspend'}</button>
+        </div>
+      </div>
+      <!-- Agent limit bar -->
+      <div style="padding:10px 20px;background:var(--bg3);display:flex;align-items:center;gap:12px">
+        <span style="font-size:11px;color:var(--text3);flex-shrink:0">Agent slots</span>
+        <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+          <div style="height:100%;border-radius:2px;background:${atLimit?'var(--red)':'var(--accent)'};width:${Math.min(100,Math.round(mAgents.length/limit*100))}%"></div>
+        </div>
+        <span style="font-size:11px;font-family:'DM Mono',monospace;color:${atLimit?'var(--red)':'var(--text2)'};flex-shrink:0">${mAgents.length}/${limit}</span>
+        <span style="font-size:11px;color:var(--text3);flex-shrink:0">Plan: <strong style="color:var(--text)">${m.plan||'starter'}</strong></span>
+      </div>
+    </div>`;
+  }).join('');
+
+  mc.innerHTML=`
+    <div class="page-hdr">
+      <div><div class="page-title">🏢 Platform Dashboard</div><div class="page-sub">Manage all merchant admin accounts</div></div>
+      <button class="btn btn-primary" onclick="openAddMerchant()">+ Add Merchant</button>
+    </div>
+    <!-- Summary stats -->
+    <div class="stats-grid" style="margin-bottom:24px">
+      <div class="stat-card"><div class="stat-label">Total Merchants</div><div class="stat-val c-accent">${merchants.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Active</div><div class="stat-val c-green">${merchants.filter(m=>m.status!=='suspended').length}</div></div>
+      <div class="stat-card"><div class="stat-label">Total Tours</div><div class="stat-val">${tours.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Total Bookings</div><div class="stat-val c-amber">${hist.filter(h=>h.status!=='cancelled').length}</div></div>
+    </div>
+    <div class="sec-bar"><span class="sec-title">Merchant Accounts <span class="cnt-badge">${merchants.length}</span></span></div>
+    ${merchantCards||'<div class="empty-state" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:40px;text-align:center">No merchants yet. Click <strong>+ Add Merchant</strong> to create one.</div>'}`;
+}
+
+function rSuperMerchants(mc){ rSuperDashboard(mc); }
+
+function rSuperBookings(mc){
+  const rows=[...hist].reverse().slice(0,100).map(h=>{
+    const m=merchants.find(x=>x.id==h.merchant_id);
+    return`<tr>
+      <td class="td-mono" style="font-size:11px">${fDT(h.created_at)}</td>
+      <td style="font-size:12px;color:var(--accent);font-weight:500">${m?m.name:'—'}</td>
+      <td style="font-weight:500">${h.tour_name}</td>
+      <td style="font-size:12px">${h.agent||'—'}</td>
+      <td style="text-align:right;font-family:'DM Mono',monospace;font-weight:600;color:var(--accent)">${h.qty}</td>
+      <td>${h.status==='cancelled'?'<span class="pill p-cancelled" style="font-size:10px">Cancelled</span>':'<span style="color:var(--green);font-size:11px">Active</span>'}</td>
+    </tr>`;
+  }).join('');
+  mc.innerHTML=`
+    <div class="page-hdr"><div><div class="page-title">All Bookings</div><div class="page-sub">Platform-wide activity</div></div></div>
+    <div class="stats-grid" style="margin-bottom:16px">
+      <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val c-accent">${hist.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Active</div><div class="stat-val c-green">${hist.filter(h=>h.status!=='cancelled').length}</div></div>
+      <div class="stat-card"><div class="stat-label">Cancelled</div><div class="stat-val c-red">${hist.filter(h=>h.status==='cancelled').length}</div></div>
+      <div class="stat-card"><div class="stat-label">Seats Sold</div><div class="stat-val">${hist.filter(h=>h.status!=='cancelled').reduce((a,h)=>a+h.qty,0)}</div></div>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Date</th><th>Merchant</th><th>Tour</th><th>Agent</th><th style="text-align:right">Seats</th><th>Status</th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="6" class="empty-state">No bookings.</td></tr>'}</tbody>
+    </table></div>`;
+}
+
+function rSuperFinance(mc){
+  const byM={};
+  hist.filter(h=>h.status!=='cancelled').forEach(h=>{
+    const m=merchants.find(x=>x.id==h.merchant_id);
+    const mn=m?m.name:'Unknown';
+    if(!byM[mn])byM[mn]={bookings:0,seats:0};
+    byM[mn].bookings++;byM[mn].seats+=h.qty;
+  });
+  const rows=Object.entries(byM).sort((a,b)=>b[1].seats-a[1].seats).map(([nm,d])=>`
+    <tr><td style="font-weight:500">${nm}</td>
+    <td style="text-align:right;font-family:'DM Mono',monospace">${d.bookings}</td>
+    <td style="text-align:right;font-family:'DM Mono',monospace;color:var(--green);font-weight:600">${d.seats}</td></tr>`).join('');
+  mc.innerHTML=`
+    <div class="page-hdr"><div><div class="page-title">Platform Finance</div><div class="page-sub">Revenue by merchant</div></div></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Merchant</th><th style="text-align:right">Bookings</th><th style="text-align:right">Seats Sold</th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="3" class="empty-state">No data.</td></tr>'}</tbody>
+    </table></div>`;
+}
+
+// ══ MERCHANT MODAL ══
+var editMerchantId=null;
+function openAddMerchant(){
+  editMerchantId=null;
+  document.getElementById('mm-title').textContent='Add Merchant';
+  document.getElementById('mm-btn').textContent='Add Merchant';
+  ['mm-name','mm-user','mm-code'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('mm-limit').value='5';
+  document.getElementById('mm-plan').value='starter';
+  document.getElementById('mm-status').value='active';
+  openOv('ov-merchant');
+  setTimeout(()=>document.getElementById('mm-name').focus(),120);
+}
+function openEditMerchant(id){
+  editMerchantId=id;
+  const m=merchants.find(x=>x.id===id);if(!m)return;
+  document.getElementById('mm-title').textContent='Edit Merchant';
+  document.getElementById('mm-btn').textContent='Save Changes';
+  document.getElementById('mm-name').value=m.name;
+  document.getElementById('mm-user').value=m.username;
+  document.getElementById('mm-code').value=m.code;
+  document.getElementById('mm-limit').value=m.agent_limit||5;
+  document.getElementById('mm-plan').value=m.plan||'starter';
+  document.getElementById('mm-status').value=m.status||'active';
+  openOv('ov-merchant');
+}
+async function confirmMerchant(){
+  const name=document.getElementById('mm-name').value.trim();
+  const username=document.getElementById('mm-user').value.trim();
+  const code=document.getElementById('mm-code').value.trim();
+  const agentLimit=parseInt(document.getElementById('mm-limit')?.value)||5;
+  const plan=document.getElementById('mm-plan')?.value||'starter';
+  const status=document.getElementById('mm-status')?.value||'active';
+  if(!name||!username||!code){alert('Please fill in all fields.');return;}
+  try{
+    if(editMerchantId){
+      const r=await sb.from('tt_merchants').update({name,username,code,agent_limit:agentLimit,plan,status}).eq('id',editMerchantId);
+      if(r.error)throw new Error(r.error.message);
+      // Also update the admin user for this merchant
+      await sb.from('tt_users').update({username,code}).eq('merchant_id',editMerchantId).eq('role','admin');
+      showToast('Merchant updated','var(--accent)');
+    } else {
+      const r=await sb.from('tt_merchants').insert({name,username,code,status,agent_limit:agentLimit,plan}).select();
+      if(r.error)throw new Error(r.error.message);
+      const newMid=r.data[0].id;
+      await sb.from('tt_users').insert({name:'Admin',username,code,role:'admin',merchant_id:newMid});
+      await sb.from('tt_categories').insert({name:'General',color:'#58a6ff',merchant_id:newMid});
+      showToast('Merchant created — '+name,'var(--green)');
+    }
+    const [md,ud]=await Promise.all([
+      sb.from('tt_merchants').select('*').order('id'),
+      sb.from('tt_users').select('*').order('id')
+    ]);
+    merchants=md.data||merchants;
+    users=ud.data||users;
+    closeOv('ov-merchant');
+    showTab(activeTab);
+  }catch(e){alert('Failed: '+e.message);}
+}
+async function toggleMerchantStatus(id,status){
+  const newStatus=status==='active'||!status?'suspended':'active';
+  if(!confirm((newStatus==='suspended'?'Suspend':'Activate')+' this merchant?'))return;
+  await sb.from('tt_merchants').update({status:newStatus}).eq('id',id);
+  const md=await sb.from('tt_merchants').select('*').order('id');
+  merchants=md.data||merchants;
+  showTab(activeTab);
+  showToast('Merchant '+(newStatus==='suspended'?'suspended':'activated'),newStatus==='suspended'?'var(--red)':'var(--green)');
 }
 
 function openOv(id){document.getElementById(id).classList.add('open');}
