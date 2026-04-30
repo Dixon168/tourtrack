@@ -4706,6 +4706,69 @@ initSupabase();
 
 
 
+<!-- ══ MERCHANT MODAL ══════════════════════════════════════════ -->
+<div class="overlay" id="ov-merchant">
+  <div class="modal" style="width:480px;max-height:95vh;overflow-y:auto">
+    <div class="modal-hd">
+      <h3 id="mm-title">Add Merchant</h3>
+      <p>Merchant admin account settings</p>
+    </div>
+    <div class="modal-bd">
+      <!-- Business Name -->
+      <div class="field">
+        <label>Business Name *</label>
+        <input type="text" id="mm-name" placeholder="e.g. Happy Tours" />
+      </div>
+      <!-- Login -->
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Admin Login Credentials</div>
+        <div class="two-col">
+          <div class="field">
+            <label>Username *</label>
+            <input type="text" id="mm-user" placeholder="Login username" autocomplete="off"/>
+          </div>
+          <div class="field">
+            <label>Password *</label>
+            <input type="text" id="mm-code" placeholder="Login password" autocomplete="off"/>
+          </div>
+        </div>
+      </div>
+      <!-- Plan & Limits -->
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Plan & Agent Limit</div>
+        <div class="two-col">
+          <div class="field">
+            <label>Agent Limit <span style="color:var(--text3);font-size:10px">(0 = unlimited)</span></label>
+            <input type="number" id="mm-limit" min="0" max="999" placeholder="5" />
+          </div>
+          <div class="field">
+            <label>Plan</label>
+            <select id="mm-plan">
+              <option value="starter">Starter — $29.99/mo (5 agents)</option>
+              <option value="professional">Professional — $49.99/mo (10 agents)</option>
+              <option value="enterprise">Enterprise — $79.99/mo (unlimited)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- Status -->
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+        <div class="field">
+          <label>Account Status</label>
+          <select id="mm-status">
+            <option value="active">✅ Active — can login and use system</option>
+            <option value="suspended">🚫 Suspended — cannot login</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeOv('ov-merchant')">Cancel</button>
+      <button class="btn btn-primary" id="mm-btn" onclick="confirmMerchant()">Add Merchant</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MEMBERS PANEL ══════════════════════════════════════════ -->
 <div class="overlay" id="ov-members">
   <div class="modal" style="width:680px;max-height:95vh;display:flex;flex-direction:column">
