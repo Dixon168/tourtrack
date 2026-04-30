@@ -1604,6 +1604,14 @@ function show(id){
   if(id==='login-screen'){
     var land=document.getElementById('landing-screen');
     if(land) land.style.display='block';
+    // Pre-fill last login
+    var lastUn=localStorage.getItem('tt_last_un');
+    var lastRole=localStorage.getItem('tt_last_role');
+    if(lastUn){
+      var unEl=document.getElementById('l-un');
+      if(unEl&&!unEl.value) unEl.value=lastUn;
+    }
+    if(lastRole) setLTab(lastRole);
   }
   // Hide landing fixed nav when not on landing page
   var landNav=document.querySelector('#landing-screen nav');
@@ -1657,6 +1665,9 @@ async function doLogin(){
       curUser=r.data[0];
       // Load ALL data for superadmin
       await loadAll();
+      // Save last login
+      localStorage.setItem('tt_last_un', un);
+      localStorage.setItem('tt_last_role', 'superadmin');
       show('app');
       buildNav();renderChip();
       showTab('superadmin');
@@ -1692,6 +1703,9 @@ async function doLogin(){
 
   curUser=u;
   await loadAll();
+  // Save last login
+  localStorage.setItem('tt_last_un', un);
+  localStorage.setItem('tt_last_role', lRole);
   show('app');
   buildNav();renderChip();
   if(u.role==='admin') showTab('tours');
@@ -4325,7 +4339,20 @@ async function rSuperDashboard(mc){
     users=ud.data||[];
   }catch(e){console.warn('reload error',e);}
 
-  const merchantCards=merchants.map(m=>{
+  // Also find admin users without a merchant record (like happy168)
+  const orphanAdmins=users.filter(u=>u.role==='admin'&&!merchants.some(m=>m.id==u.merchant_id));
+  const allMerchants=[...merchants, ...orphanAdmins.map(u=>({
+    id:u.merchant_id||('u_'+u.id),
+    name:u.name||u.username,
+    username:u.username,
+    code:u.code,
+    status:'active',
+    agent_limit:5,
+    plan:'starter',
+    _orphan:true
+  }))];
+
+  const merchantCards=allMerchants.map(m=>{
     const mAgents=users.filter(u=>u.merchant_id==m.id&&(u.role==='agent'||u.role==='user'));
     const mTours=tours.filter(t=>t.merchant_id==m.id);
     const mBookings=hist.filter(h=>h.merchant_id==m.id&&h.status!=='cancelled');
@@ -4372,7 +4399,7 @@ async function rSuperDashboard(mc){
 
   mc.innerHTML=`
     <div class="page-hdr">
-      <div><div class="page-title">🏢 Merchant Accounts</div><div class="page-sub">${merchants.length} merchant${merchants.length!==1?'s':''} · ${merchants.filter(m=>m.status!=='suspended').length} active</div></div>
+      <div><div class="page-title">🏢 Merchant Accounts</div><div class="page-sub">${allMerchants.length} merchant${allMerchants.length!==1?'s':''} · ${allMerchants.filter(m=>m.status!=='suspended').length} active</div></div>
       <button class="btn btn-primary" onclick="openAddMerchant()">+ Add Merchant</button>
     </div>
     ${merchantCards||'<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:48px;text-align:center;color:var(--text2)">No merchants yet.<br><br><button class="btn btn-primary" onclick="openAddMerchant()">+ Add First Merchant</button></div>'}`;
