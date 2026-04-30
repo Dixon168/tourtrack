@@ -1638,7 +1638,7 @@ async function doLogin(){
   // For Platform tab - query superadmin directly from DB
   if(lRole==='superadmin'){
     try{
-      const r=await sb.from('tt_users').select('*').eq('username',un).eq('code',pw).eq('role','superadmin').limit(1);
+      const r=await sb.from('tt_users').select('*').ilike('username',un).eq('code',pw).eq('role','superadmin').limit(1);
       if(r.error||!r.data||!r.data[0]){showLErr('Invalid platform credentials.');return;}
       curUser=r.data[0];
       // Load ALL data for superadmin
@@ -1656,7 +1656,7 @@ async function doLogin(){
   // If not found in loaded users, try DB directly (handles merchant admin login)
   if(!u){
     try{
-      const r=await sb.from('tt_users').select('*').eq('username',un).eq('code',pw).limit(1);
+      const r=await sb.from('tt_users').select('*').ilike('username',un).eq('code',pw).limit(1);
       if(r.data&&r.data[0]) u=r.data[0];
     }catch(e){}
   }
