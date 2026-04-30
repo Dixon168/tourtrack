@@ -4638,58 +4638,89 @@ async function exitMerchant(){
 function rSupportPage(mc){
   const merchant = curMerchant||merchants.find(m=>m.id==curUser.merchant_id)||{name:curUser.name||''};
   mc.innerHTML=`
-    <div class="page-hdr">
-      <div>
-        <div class="page-title">💬 Support & Feedback</div>
-        <div class="page-sub">We're here to help and always improving</div>
+    <!-- HERO BANNER -->
+    <div style="background:linear-gradient(135deg,#0d1f3c 0%,#0a1628 50%,#0d1f3c 100%);border:1px solid var(--accent);border-radius:16px;padding:36px 32px;margin-bottom:28px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-40px;right:-40px;width:220px;height:220px;background:radial-gradient(circle,rgba(59,130,246,.12) 0%,transparent 70%);pointer-events:none"></div>
+      <div style="position:absolute;bottom:-30px;left:30%;width:180px;height:180px;background:radial-gradient(circle,rgba(167,139,250,.08) 0%,transparent 70%);pointer-events:none"></div>
+      <div style="position:relative;z-index:1">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;color:var(--accent2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:16px">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>
+          Real People. Real Support.
+        </div>
+        <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:12px;line-height:1.2">
+          We build this <span style="color:var(--accent)">for you</span>.<br>Tell us what you need.
+        </div>
+        <div style="font-size:14px;color:var(--text2);line-height:1.8;max-width:560px">
+          TourTrack isn't a big faceless software company — we're a small team that listens.
+          Every feature request, every complaint, every "what if you could do this..." message
+          gets read personally. If it makes sense for your business, we build it.
+        </div>
       </div>
     </div>
 
-    <!-- Welcome message -->
-    <div style="background:linear-gradient(135deg,var(--accent-dim),var(--bg2));border:1px solid var(--accent);border-radius:14px;padding:24px;margin-bottom:24px">
-      <div style="font-size:18px;font-weight:700;margin-bottom:8px">👋 We'd love to hear from you</div>
-      <div style="font-size:14px;color:var(--text2);line-height:1.7">
-        TourTrack is built around your needs. If there's a feature you'd like, a workflow you want improved,
-        or a tour style you need — just let us know. We're open to listening and making changes.
-        Your feedback directly shapes how we build this platform.
+    <!-- WHY REACH OUT - value props -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start">
+        <div style="font-size:24px;flex-shrink:0">⚡</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">Fast Response</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6">We typically respond within 24 hours. Urgent issues get priority.</div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start">
+        <div style="font-size:24px;flex-shrink:0">🔧</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">We Actually Fix Things</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6">Bug reports don't go into a void. We fix issues and push updates fast.</div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start">
+        <div style="font-size:24px;flex-shrink:0">🎯</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">Built Around You</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6">Every tour company works differently. We adapt the platform to fit how you work.</div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start">
+        <div style="font-size:24px;flex-shrink:0">💬</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">No Request Too Small</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6">A small layout tweak, a new field, a different report format — just ask.</div>
+        </div>
       </div>
     </div>
 
-    <!-- Request type cards -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:28px">
-      <div onclick="setSupportType('bug')" id="stype-bug" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s;text-align:center">
-        <div style="font-size:28px;margin-bottom:8px">🐛</div>
-        <div style="font-size:13px;font-weight:600">Report a Bug</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">Something not working?</div>
-      </div>
-      <div onclick="setSupportType('feature')" id="stype-feature" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s;text-align:center">
-        <div style="font-size:28px;margin-bottom:8px">✨</div>
-        <div style="font-size:13px;font-weight:600">Feature Request</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">Want something new?</div>
-      </div>
-      <div onclick="setSupportType('tour')" id="stype-tour" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s;text-align:center">
-        <div style="font-size:28px;margin-bottom:8px">🗂</div>
-        <div style="font-size:13px;font-weight:600">Tour Customization</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">Change tour style/fields?</div>
-      </div>
-      <div onclick="setSupportType('other')" id="stype-other" style="background:var(--bg2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:.2s;text-align:center">
-        <div style="font-size:28px;margin-bottom:8px">💡</div>
-        <div style="font-size:13px;font-weight:600">General Feedback</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px">Anything else on your mind</div>
+    <!-- Request type selector -->
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">What can we help with?</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">
+        <div onclick="setSupportType('bug')" id="stype-bug" style="background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:.2s;display:flex;gap:10px;align-items:center">
+          <span style="font-size:20px">🐛</span>
+          <div><div style="font-size:13px;font-weight:600">Bug Report</div><div style="font-size:11px;color:var(--text3)">Something broken</div></div>
+        </div>
+        <div onclick="setSupportType('feature')" id="stype-feature" style="background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:.2s;display:flex;gap:10px;align-items:center">
+          <span style="font-size:20px">✨</span>
+          <div><div style="font-size:13px;font-weight:600">Feature Request</div><div style="font-size:11px;color:var(--text3)">Add something new</div></div>
+        </div>
+        <div onclick="setSupportType('tour')" id="stype-tour" style="background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:.2s;display:flex;gap:10px;align-items:center">
+          <span style="font-size:20px">🗂</span>
+          <div><div style="font-size:13px;font-weight:600">Tour Style</div><div style="font-size:11px;color:var(--text3)">Customize your setup</div></div>
+        </div>
+        <div onclick="setSupportType('other')" id="stype-other" style="background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:.2s;display:flex;gap:10px;align-items:center">
+          <span style="font-size:20px">💡</span>
+          <div><div style="font-size:13px;font-weight:600">General Feedback</div><div style="font-size:11px;color:var(--text3)">Anything on your mind</div></div>
+        </div>
       </div>
     </div>
 
     <!-- Contact Form -->
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px">
-      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:16px;text-transform:uppercase;letter-spacing:.6px">Send us a message</div>
-
-      <div id="support-success" style="display:none;text-align:center;padding:32px 0">
-        <div style="font-size:48px;margin-bottom:12px">✅</div>
-        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:6px">Message Sent!</div>
-        <div style="color:var(--text2);font-size:14px">We'll get back to you as soon as possible.</div>
-        <button class="btn btn-primary" style="margin-top:20px" onclick="resetSupportForm()">Send Another</button>
+      <div id="support-success" style="display:none;text-align:center;padding:40px 0">
+        <div style="font-size:52px;margin-bottom:14px">✅</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">Message Sent!</div>
+        <div style="color:var(--text2);font-size:14px;margin-bottom:20px">We'll read it personally and get back to you soon.</div>
+        <button class="btn btn-primary" onclick="resetSupportForm()">Send Another Message</button>
       </div>
-
       <div id="support-form">
         <div class="two-col" style="margin-bottom:14px">
           <div class="field">
@@ -4698,36 +4729,38 @@ function rSupportPage(mc){
           </div>
           <div class="field">
             <label>Company</label>
-            <input type="text" id="sp-company" value="${merchant.name||''}" placeholder="Your company" readonly style="background:var(--bg3);opacity:.7"/>
+            <input type="text" id="sp-company" value="${merchant.name||''}" readonly style="background:var(--bg3);opacity:.7"/>
           </div>
         </div>
-        <div class="field" style="margin-bottom:14px">
-          <label>Request Type</label>
-          <select id="sp-type">
-            <option value="">— Select type —</option>
-            <option value="Bug Report">🐛 Bug Report — Something not working</option>
-            <option value="Feature Request">✨ Feature Request — Add something new</option>
-            <option value="Tour Customization">🗂 Tour Customization — Change tour style or fields</option>
-            <option value="General Feedback">💡 General Feedback — Other thoughts</option>
-          </select>
-        </div>
-        <div class="field" style="margin-bottom:14px">
-          <label>Subject</label>
-          <input type="text" id="sp-subject" placeholder="Brief summary of your request"/>
+        <div class="two-col" style="margin-bottom:14px">
+          <div class="field">
+            <label>Request Type</label>
+            <select id="sp-type">
+              <option value="">— Select type —</option>
+              <option value="Bug Report">🐛 Bug Report</option>
+              <option value="Feature Request">✨ Feature Request</option>
+              <option value="Tour Customization">🗂 Tour Style / Customization</option>
+              <option value="General Feedback">💡 General Feedback</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Subject</label>
+            <input type="text" id="sp-subject" placeholder="Brief summary"/>
+          </div>
         </div>
         <div class="field" style="margin-bottom:20px">
-          <label>Details <span style="color:var(--text3);font-size:11px">— the more detail, the faster we can help</span></label>
-          <textarea id="sp-message" rows="5" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;outline:none;resize:vertical" placeholder="Describe your request in detail. For bugs, tell us what you did and what happened. For features, tell us how you'd like it to work..."></textarea>
+          <label>Tell us more <span style="color:var(--text3);font-size:11px">— the more detail, the faster we can help</span></label>
+          <textarea id="sp-message" rows="6" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:12px 14px;outline:none;resize:vertical;line-height:1.6" placeholder="Describe your request in detail..."></textarea>
         </div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <button class="btn btn-primary" style="padding:11px 28px" onclick="submitSupport()">Send Message →</button>
-          <span id="sp-err" style="font-size:13px;color:var(--red);display:none"></span>
+        <div style="display:flex;align-items:center;gap:14px">
+          <button class="btn btn-primary" style="padding:12px 28px;font-size:14px" onclick="submitSupport()">Send Message →</button>
+          <span style="font-size:12px;color:var(--text3)">We read every message personally</span>
+          <span id="sp-err" style="font-size:13px;color:var(--red);display:none;margin-left:auto"></span>
         </div>
       </div>
     </div>`;
 
-  // Restore selected type if any
-  window._supportType = window._supportType||'';
+  window._supportType=window._supportType||'';
   if(window._supportType) setSupportType(window._supportType);
 }
 
