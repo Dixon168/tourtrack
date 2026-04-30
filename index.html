@@ -1713,6 +1713,11 @@ async function doLogin(){
 }
 function showLErr(m){const e=document.getElementById('login-err');e.textContent=m;e.style.display='block';}
 async function logout(){
+  // If in support mode, exit back to superadmin instead of home
+  if(window._superAdminSession){
+    exitMerchant();
+    return;
+  }
   curUser=null;curMerchant=null;
   cats=[];tours=[];hist=[];users=[];vendors=[];groups=[];groupMembers=[];merchants=[];
   document.getElementById('l-un').value='';
@@ -1739,7 +1744,8 @@ function buildNav(){
     const tabs=[['superadmin','🏢 Merchants']];
     document.getElementById('nav').innerHTML=tabs.map(([id,lb])=>`<button class="nav-tab${activeTab===id?' active':''}" onclick="showTab('${id}')">${lb}</button>`).join('');
     updateLangButtons();
-    const so=document.getElementById('signout-btn');if(so)so.textContent=tr('signout');
+    const so=document.getElementById('signout-btn');
+    if(so) so.textContent=tr('signout');
     return;
   }
   var badge=document.getElementById('demo-badge');
@@ -4567,27 +4573,23 @@ async function enterMerchant(merchantId){
   // Add return button to topbar
   showToast('👁 Viewing as '+m.name+' · Click "Exit Support" to return','var(--amber)');
 
-  // Add exit support button to topbar
+  // Update Sign Out button to show Exit instead
   setTimeout(function(){
-    // Remove any existing exit button first
+    const so=document.getElementById('signout-btn');
+    if(so){
+      so.textContent='⬅ Exit to Platform';
+      so.style.background='var(--amber-dim)';
+      so.style.color='var(--amber)';
+      so.style.borderColor='var(--amber-dim)';
+    }
+    // Remove any old exit button
     const old=document.getElementById('exit-support-btn');
     if(old) old.remove();
-    const chip=document.getElementById('uchip');
-    if(chip){
-      const exitBtn=document.createElement('button');
-      exitBtn.id='exit-support-btn';
-      exitBtn.className='btn btn-xs';
-      exitBtn.style.cssText='background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber-dim);font-weight:600;margin-right:8px;padding:6px 12px;border-radius:6px;cursor:pointer;font-family:DM Sans,sans-serif;font-size:12px';
-      exitBtn.innerHTML='⬅ Return to Platform';
-      exitBtn.onclick=exitMerchant;
-      chip.parentNode.insertBefore(exitBtn,chip);
-    }
   },400);
 }
 
 async function exitMerchant(){
   if(!window._superAdminSession){
-    // Even without session, try to go back
     showTab('superadmin');
     return;
   }
@@ -4595,9 +4597,14 @@ async function exitMerchant(){
   curUser=window._superAdminSession.user;
   curMerchant=null;
   window._superAdminSession=null;
-  // Remove exit button
-  const exitBtn=document.getElementById('exit-support-btn');
-  if(exitBtn)exitBtn.remove();
+  // Restore Sign Out button
+  const so=document.getElementById('signout-btn');
+  if(so){
+    so.textContent=tr('signout');
+    so.style.background='';
+    so.style.color='';
+    so.style.borderColor='';
+  }
   // Reload all data as superadmin
   try{ await loadAll(); }catch(e){}
   buildNav();renderChip();
