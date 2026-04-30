@@ -1229,8 +1229,12 @@ async function submitContact(){
       title: 'TourTrack Enquiry - '+company,
       name: contact,
       email: email,
-      time: new Date().toLocaleString(),
-      message: 'Co: '+company+' | '+contact+' | '+email+' | '+(phone||'N/A')+' | Plan: '+(plan||'N/A')+' | '+( message||'N/A')
+      company: company,
+      contact: contact,
+      phone: phone||'N/A',
+      plan: plan||'N/A',
+      message: message||'N/A',
+      time: new Date().toLocaleString()
     });
     document.getElementById('contact-form').style.display='none';
     document.getElementById('contact-success').style.display='block';
