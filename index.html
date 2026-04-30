@@ -1554,7 +1554,6 @@ async function launchApp(){
 }
 
 async function loadAll(){
-  // Timeout wrapper - give up after 8 seconds
   function withTimeout(promise, ms){
     return Promise.race([
       promise,
@@ -1565,22 +1564,35 @@ async function loadAll(){
     try{const r=await withTimeout(fn,8000);return r;}
     catch(e){return{data:[]};}
   }
-  const [u,ca,t,h,v,g,gm] = await Promise.all([
-    safe(sb.from('tt_users').select('*').order('id')),
-    safe(sb.from('tt_categories').select('*').order('id')),
-    safe(sb.from('tt_tours').select('*').order('id')),
-    safe(sb.from('tt_history').select('*').order('created_at')),
-    safe(sb.from('tt_vendors').select('*').order('name')),
+
+  const isSuperAdmin = curUser&&curUser.role==='superadmin';
+  const mid = curUser&&curUser.merchant_id;
+
+  // Filter by merchant_id for non-superadmin users
+  function q(table, extra){
+    let query = sb.from(table).select(extra||'*');
+    if(!isSuperAdmin && mid) query = query.eq('merchant_id', mid);
+    return query;
+  }
+
+  const [u,ca,t,h,g,gm,m] = await Promise.all([
+    safe(q('tt_users').order('id')),
+    safe(q('tt_categories').order('id')),
+    safe(q('tt_tours').order('id')),
+    safe(q('tt_history').order('created_at')),
     safe(sb.from('tt_groups').select('*, tt_group_pricing(*)').order('created_at',{ascending:false})),
-    safe(sb.from('tt_members').select('*').order('created_at'))
+    safe(q('tt_members').order('created_at')),
+    safe(sb.from('tt_merchants').select('*').order('id'))
   ]);
+
   users        = u.data||[];
   cats         = ca.data||[];
   tours        = t.data||[];
   hist         = h.data||[];
-  vendors      = v.data||[];
+  vendors      = [];
   groups       = g.data||[];
   groupMembers = gm.data||[];
+  merchants    = m.data||[];
 }
 
 function setupRealtime(){
