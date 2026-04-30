@@ -1094,7 +1094,7 @@ en:{
   'el-f2t':'Passenger Management','el-f2d':'Full roster per booking — name, age, gender, passport, room number. Organized by family group and room.',
   'el-f3t':'Agent Finance Tracking','el-f3d':'See exactly who sold what. Lookup by date range or by tour. Every booking tagged to the agent.',
   'el-f4t':'Real-time Availability','el-f4d':'Seat counts update the moment a booking is made. Every agent sees the same live number — no more overbooking.',
-  'el-f5t':'Booking Lookup','el-f5d':'Search bookings by date range or by tour. Export to CSV. Agents see only their own, admins see everything.',
+  'el-f5t':tr('lookupTitle'),'el-f5d':'Search bookings by date range or by tour. Export to CSV. Agents see only their own, admins see everything.',
   'el-f6t':'Multi-Merchant Platform','el-f6d':'Run multiple tour companies from one platform. Each merchant has their own data, agents, and admin.',
   'el-how-tag':'How It Works','el-how-title':'Up and running in minutes.',
   'el-ht1':'Create Your Account','el-hd1':'Contact us to get your merchant account. You get an admin login and your own workspace.',
@@ -1212,7 +1212,7 @@ async function submitContact(){
   if(!company||!contact||!email){err.textContent=_lang==='zh'?'请填写必填项目。':'Please fill in all required fields.';err.style.display='block';return;}
   if(!email.includes('@')){err.textContent=_lang==='zh'?'请输入有效的电子邮件地址。':'Please enter a valid email address.';err.style.display='block';return;}
   var btn=document.getElementById('el-submit-btn');
-  btn.textContent=_lang==='zh'?'发送中...':'Sending...';
+  btn.textContent=_lang==='zh'?'发送中...':tr('sending');
   btn.style.opacity='.7';
   btn.disabled=true;
   try{
@@ -1242,7 +1242,7 @@ async function submitContact(){
     console.error('EmailJS error:', e);
     err.textContent=(_lang==='zh'?'发送失败：':'Send failed: ')+(e.text||e.message||'Unknown error');
     err.style.display='block';
-    btn.textContent=_lang==='zh'?'发送消息 →':'Send Message →';
+    btn.textContent=_lang==='zh'?'发送消息 →':tr('sendButton');
     btn.style.opacity='1';
     btn.disabled=false;
   }
@@ -1297,7 +1297,7 @@ TX.en['el-contact-tag']='Contact Us';TX.en['el-contact-title']='Ready to get sta
 TX.en['el-contact-sub']='Fill in the form and we\'ll get back to you within 24 hours to set up your account.';
 TX.en['el-lbl-company']='Company Name *';TX.en['el-lbl-contact']='Contact Name *';TX.en['el-lbl-email']='Email *';TX.en['el-lbl-phone']='Phone';TX.en['el-lbl-plan']='Interested Plan';TX.en['el-lbl-msg']='Message';
 TX.en['el-plan-default']='— Select a plan —';TX.en['el-plan1']='Starter — $29.99/mo (up to 5 agents)';TX.en['el-plan2']='Professional — $49.99/mo (up to 10 agents)';TX.en['el-plan3']='Enterprise — $79.99/mo (unlimited agents)';
-TX.en['el-submit-btn']='Send Message →';
+TX.en['el-submit-btn']=tr('sendButton');
 TX.en['el-form-ok-t']='Message sent!';TX.en['el-form-ok-s']='We\'ll be in touch within 24 hours.';
 TX.en['el-platform-link']='Platform Admin';TX.en['el-platform-sub']='Platform Administration';TX.en['el-pl-user']='Username';TX.en['el-pl-pass']='Password';TX.en['el-pl-btn']='Sign In to Platform →';
 TX.en['el-fnav1']='Pricing';TX.en['el-fnav2']='Contact';TX.en['el-fnav3']='Login';
@@ -1467,10 +1467,10 @@ const CAT_COLORS=['#58a6ff','#3fb950','#d29922','#f85149','#bc8cff','#39d9c7','#
 var lang = localStorage.getItem('tt_lang')||'en';
 
 var TRANS_EN = {
-  reports:'Reports', past:'Past Tours', bookings:'Bookings', finance:'Finance',
-  groups:'Groups', categories:'Categories', users:'Users', agentbook:'Bookings',
-  agentfinance:'My Finance', signout:'Sign out', welcome:'Welcome back',
-  signin:'Sign In', admin:'Admin', agent:'Agent',
+  reports:'Reports', past:tr('pastTitle'), bookings:'Bookings', finance:'Finance',
+  groups:'Groups', categories:tr('catsTitle'), users:'Users', agentbook:'Bookings',
+  agentfinance:tr('agentFinTitle'), signout:'Sign out', welcome:'Welcome back',
+  signin:'Sign In', admin:'Admin', agent:'Agent', platform:'Platform', loginWelcome:'Sign in to your account', loginSub:'Access the tour management system',
   addTour:'+ Add Tour', addCat:'+ Category', addVendor:'+ Vendor',
   exportCsv:'↓ Export', bookNow:'Book Now', detail:'Detail', edit:'Edit',
   disable:'Disable', enable:'Enable', cancel:'Cancel', back:'← Back',
@@ -1484,17 +1484,17 @@ var TRANS_EN = {
   next:'Next: Add Rooms →', agentLabel:'Select Agent *',
   roomPrompt:'Room number? (e.g. 101, leave blank = TBA)',
   roomPrompt2:'Room number for this room?',
-  activeToursPage:'Active Tours', liveData:'Today and upcoming · Live data',
+  activeToursPage:tr('reportsTitle'), liveData:tr('reportsSub'),
   bookingHistory:'Booking History', includesDetails:'· Includes room & member details',
   noBookings:'No bookings yet.', noMembers:'No member details recorded.',
   groupLabel:'Group', roomLabel:'Room', paxRecorded:'pax recorded'
 };
 
 var TRANS_ZH = {
-  reports:'报告', past:'历史团', bookings:'预订管理', finance:'财务报表',
+  reports:'报告', past:'历史团', bookings:'预订管理', finance:'财务报表', support:'💬 技术支持',
   groups:'团组', categories:'分类', users:'代理管理', agentbook:'预订',
   agentfinance:'我的财务', signout:'退出', welcome:'欢迎回来',
-  signin:'登录', admin:'管理员', agent:'代理',
+  signin:'登录', admin:'管理员', agent:'代理', platform:'平台', loginWelcome:'登录您的账号', loginSub:'访问旅游管理系统',
   addTour:'+ 新增团', addCat:'+ 分类', addVendor:'+ 供应商',
   exportCsv:'↓ 导出', bookNow:'立即预订', detail:'详情', edit:'编辑',
   disable:'停用', enable:'启用', cancel:'取消', back:'← 返回',
@@ -1523,6 +1523,7 @@ function setLang(l){
   lang=l;
   localStorage.setItem('tt_lang',l);
   if(curUser){ buildNav(); showTab(activeTab); }
+  else { setLTab(lRole); } // refresh login tabs
   updateLangButtons();
 }
 
@@ -1666,6 +1667,10 @@ function setLTab(r){
   lRole=r;
   document.querySelectorAll('.login-tab').forEach((t,i)=>t.classList.toggle('active',
     (i===0&&r==='admin')||(i===1&&r==='agent')||(i===2&&r==='superadmin')));
+  // Update tab labels for language
+  const tabs=[document.getElementById('ltab-admin'),document.getElementById('ltab-agent'),document.getElementById('ltab-platform')];
+  const labels=[tr('admin'),tr('agent'),tr('platform')];
+  tabs.forEach((t,i)=>{if(t)t.textContent=labels[i];});
   document.getElementById('lbl-un').textContent=r==='admin'?'Admin Username':'Agent Username';
   document.getElementById('lbl-pw').textContent=r==='admin'?'Password':'Login Code';
   document.getElementById('l-hint').innerHTML='';
@@ -1771,8 +1776,8 @@ function buildNav(){
   if(badge) badge.style.display=DEMO_MODE?'inline':'none';
   const r=curUser.role;
   const tabs=r==='admin'
-    ?[['tours','Reports'],['past','Past Tours'],['booking','Bookings'],['booklookup','Lookup'],['finance','Finance'],['categories','Categories'],['users','Users'],['support','💬 Support']]
-    :[['agentbook','Bookings'],['agentlookup','Lookup'],['agentfinance','My Finance']];
+    ?[['tours','Reports'],['past',tr('pastTitle')],['booking','Bookings'],['booklookup','Lookup'],['finance','Finance'],['categories',tr('catsTitle')],['users','Users'],['support',tr('support')]]
+    :[['agentbook','Bookings'],['agentlookup','Lookup'],['agentfinance',tr('agentFinTitle')]];
   document.getElementById('nav').innerHTML=tabs.map(([id,lb])=>`<button class="nav-tab${activeTab===id?' active':''}" onclick="showTab('${id}')">${lb}</button>`).join('');
 }
 function showTab(t){
@@ -4041,7 +4046,7 @@ function rBookLookup(mc){
 
   mc.innerHTML=`
     <div class="page-hdr">
-      <div><div class="page-title">${isAgent?'My Booking Lookup':'Booking Lookup'}</div><div class="page-sub">${isAgent?curUser.name+' · ':''}Search by date or by tour</div></div>
+      <div><div class="page-title">${isAgent?'My Booking Lookup':tr('lookupTitle')}</div><div class="page-sub">${isAgent?curUser.name+' · ':''}Search by date or by tour</div></div>
       <button class="btn btn-ghost btn-xs" onclick="exportLookup()">↓ Export</button>
     </div>
 
@@ -4648,12 +4653,10 @@ function rSupportPage(mc){
           Real People. Real Support.
         </div>
         <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:12px;line-height:1.2">
-          We build this <span style="color:var(--accent)">for you</span>.<br>Tell us what you need.
+          ${tr('supportHero').replace('for you','<span style=\"color:var(--accent)\">for you</span>')}
         </div>
         <div style="font-size:14px;color:var(--text2);line-height:1.8;max-width:560px">
-          TourTrack isn't a big faceless software company — we're a small team that listens.
-          Every feature request, every complaint, every "what if you could do this..." message
-          gets read personally. If it makes sense for your business, we build it.
+          ${tr('supportDesc')}
         </div>
       </div>
     </div>
@@ -4662,37 +4665,25 @@ function rSupportPage(mc){
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:28px">
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start">
         <div style="font-size:24px;flex-shrink:0">⚡</div>
-        <div>
-          <div style="font-size:13px;font-weight:700;margin-bottom:4px">Fast Response</div>
-          <div style="font-size:12px;color:var(--text2);line-height:1.6">We typically respond within 24 hours. Urgent issues get priority.</div>
-        </div>
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:4px">${tr('fastResponse')}</div><div style="font-size:12px;color:var(--text2);line-height:1.6">${tr('fastResponseDesc')}</div></div>
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start">
         <div style="font-size:24px;flex-shrink:0">🔧</div>
-        <div>
-          <div style="font-size:13px;font-weight:700;margin-bottom:4px">We Actually Fix Things</div>
-          <div style="font-size:12px;color:var(--text2);line-height:1.6">Bug reports don't go into a void. We fix issues and push updates fast.</div>
-        </div>
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:4px">${tr('weFixThings')}</div><div style="font-size:12px;color:var(--text2);line-height:1.6">${tr('weFixDesc')}</div></div>
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start">
         <div style="font-size:24px;flex-shrink:0">🎯</div>
-        <div>
-          <div style="font-size:13px;font-weight:700;margin-bottom:4px">Built Around You</div>
-          <div style="font-size:12px;color:var(--text2);line-height:1.6">Every tour company works differently. We adapt the platform to fit how you work.</div>
-        </div>
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:4px">${tr('builtForYou')}</div><div style="font-size:12px;color:var(--text2);line-height:1.6">${tr('builtDesc')}</div></div>
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start">
         <div style="font-size:24px;flex-shrink:0">💬</div>
-        <div>
-          <div style="font-size:13px;font-weight:700;margin-bottom:4px">No Request Too Small</div>
-          <div style="font-size:12px;color:var(--text2);line-height:1.6">A small layout tweak, a new field, a different report format — just ask.</div>
-        </div>
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:4px">${tr('noSmall')}</div><div style="font-size:12px;color:var(--text2);line-height:1.6">${tr('noSmallDesc')}</div></div>
       </div>
     </div>
 
     <!-- Request type selector -->
     <div style="margin-bottom:20px">
-      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">What can we help with?</div>
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">${tr('requestType')}</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">
         <div onclick="setSupportType('bug')" id="stype-bug" style="background:var(--bg2);border:2px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:.2s;display:flex;gap:10px;align-items:center">
           <span style="font-size:20px">🐛</span>
@@ -4717,18 +4708,18 @@ function rSupportPage(mc){
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px">
       <div id="support-success" style="display:none;text-align:center;padding:40px 0">
         <div style="font-size:52px;margin-bottom:14px">✅</div>
-        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">Message Sent!</div>
-        <div style="color:var(--text2);font-size:14px;margin-bottom:20px">We'll read it personally and get back to you soon.</div>
-        <button class="btn btn-primary" onclick="resetSupportForm()">Send Another Message</button>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px">${tr('msgSent')}</div>
+        <div style="color:var(--text2);font-size:14px;margin-bottom:20px">${tr('msgSentDesc')}</div>
+        <button class="btn btn-primary" onclick="resetSupportForm()">${tr('sendAnother')}</button>
       </div>
       <div id="support-form">
         <div class="two-col" style="margin-bottom:14px">
           <div class="field">
-            <label>Your Name</label>
+            <label>${tr('yourName')}</label>
             <input type="text" id="sp-name" value="${curUser.name||''}" placeholder="Your name"/>
           </div>
           <div class="field">
-            <label>Company</label>
+            <label>${tr('company')}</label>
             <input type="text" id="sp-company" value="${merchant.name||''}" readonly style="background:var(--bg3);opacity:.7"/>
           </div>
         </div>
@@ -4744,17 +4735,17 @@ function rSupportPage(mc){
             </select>
           </div>
           <div class="field">
-            <label>Subject</label>
-            <input type="text" id="sp-subject" placeholder="Brief summary"/>
+            <label>${tr('subject')}</label>
+            <input type="text" id="sp-subject" placeholder="${tr('subject')}"/>
           </div>
         </div>
         <div class="field" style="margin-bottom:20px">
-          <label>Tell us more <span style="color:var(--text3);font-size:11px">— the more detail, the faster we can help</span></label>
+          <label>${tr('details')} <span style="color:var(--text3);font-size:11px">${tr('detailsHint')}</span></label>
           <textarea id="sp-message" rows="6" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:12px 14px;outline:none;resize:vertical;line-height:1.6" placeholder="Describe your request in detail..."></textarea>
         </div>
         <div style="display:flex;align-items:center;gap:14px">
-          <button class="btn btn-primary" style="padding:12px 28px;font-size:14px" onclick="submitSupport(this)">Send Message →</button>
-          <span style="font-size:12px;color:var(--text3)">We read every message personally</span>
+          <button class="btn btn-primary" style="padding:12px 28px;font-size:14px" onclick="submitSupport(this)">${tr('sendButton')}</button>
+          <span style="font-size:12px;color:var(--text3)">${tr('readPersonally')}</span>
           <span id="sp-err" style="font-size:13px;color:var(--red);display:none;margin-left:auto"></span>
         </div>
       </div>
@@ -4775,7 +4766,7 @@ function setSupportType(type){
   });
   const sel=document.getElementById('sp-type');
   if(!sel) return;
-  const map={bug:'Bug Report',feature:'Feature Request',tour:'Tour Customization',other:'General Feedback'};
+  const map={bug:tr('bugReport'),feature:tr('featureReq'),tour:'Tour Customization',other:tr('genFeedback')};
   if(map[type]) sel.value=map[type];
 }
 
@@ -4802,12 +4793,12 @@ async function submitSupport(btn){
   err.style.display='none';
 
   if(!subject||!message){
-    err.textContent='Please fill in subject and details.';
+    err.textContent=tr('fillSubject');
     err.style.display='block';
     return;
   }
 
-  btn.textContent='Sending...';btn.disabled=true;btn.style.opacity='.7';
+  btn.textContent=tr('sending');btn.disabled=true;btn.style.opacity='.7';
 
   try{
     emailjs.init({publicKey:'NMKFVvA_8ljHYQZHK'});
@@ -4829,7 +4820,7 @@ async function submitSupport(btn){
     console.error('Support email error:',e);
     err.textContent='Send failed: '+(e.text||e.message||'Unknown error');
     err.style.display='block';
-    if(btn){btn.textContent='Send Message →';btn.disabled=false;btn.style.opacity='1';}
+    if(btn){btn.textContent=tr('sendButton');btn.disabled=false;btn.style.opacity='1';}
   }
 }
 
