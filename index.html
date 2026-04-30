@@ -1708,7 +1708,7 @@ function renderChip(){
 // ══════════════════════════════════════════════════
 function buildNav(){
   if(curUser&&curUser.role==='superadmin'){
-    const tabs=[['superadmin','🏢 Dashboard'],['sa-merchants','Merchants'],['sa-all-bookings','All Bookings'],['sa-finance','Finance']];
+    const tabs=[['superadmin','🏢 Merchants']];
     document.getElementById('nav').innerHTML=tabs.map(([id,lb])=>`<button class="nav-tab${activeTab===id?' active':''}" onclick="showTab('${id}')">${lb}</button>`).join('');
     updateLangButtons();
     const so=document.getElementById('signout-btn');if(so)so.textContent=tr('signout');
@@ -4299,8 +4299,18 @@ async function confirmBatch(){
 // ══════════════════════════════════════════════════
 //  SUPER ADMIN — DASHBOARD (Admin Users List)
 // ══════════════════════════════════════════════════
-function rSuperDashboard(mc){
-  // Load all merchants fresh
+async function rSuperDashboard(mc){
+  mc.innerHTML='<div style="padding:40px;text-align:center;color:var(--text2)">Loading...</div>';
+  // Always reload merchants + users fresh
+  try{
+    const [md,ud]=await Promise.all([
+      sb.from('tt_merchants').select('*').order('created_at',{ascending:false}),
+      sb.from('tt_users').select('*').order('id')
+    ]);
+    merchants=md.data||[];
+    users=ud.data||[];
+  }catch(e){console.warn('reload error',e);}
+
   const merchantCards=merchants.map(m=>{
     const mAgents=users.filter(u=>u.merchant_id==m.id&&(u.role==='agent'||u.role==='user'));
     const mTours=tours.filter(t=>t.merchant_id==m.id);
@@ -4308,56 +4318,49 @@ function rSuperDashboard(mc){
     const limit=m.agent_limit||5;
     const atLimit=mAgents.length>=limit;
     const isSuspended=m.status==='suspended';
-    return`<div style="background:var(--bg2);border:1px solid ${isSuspended?'var(--red-dim)':'var(--border)'};border-radius:14px;overflow:hidden;margin-bottom:12px;opacity:${isSuspended?.6:1}">
-      <div style="padding:16px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)">
+    const adminUser=users.find(u=>u.merchant_id==m.id&&u.role==='admin');
+    return`<div style="background:var(--bg2);border:2px solid ${isSuspended?'var(--red-dim)':'var(--border)'};border-radius:14px;overflow:hidden;margin-bottom:14px">
+      <div style="padding:18px 20px;display:flex;align-items:center;gap:14px">
         <!-- Avatar -->
-        <div style="width:44px;height:44px;border-radius:12px;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:20px;font-weight:800;flex-shrink:0">${m.name.charAt(0).toUpperCase()}</div>
+        <div style="width:48px;height:48px;border-radius:12px;background:${isSuspended?'var(--red-dim)':'var(--accent-dim)'};color:${isSuspended?'var(--red)':'var(--accent)'};display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:22px;font-weight:800;flex-shrink:0">${m.name.charAt(0).toUpperCase()}</div>
         <!-- Info -->
         <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span style="font-size:15px;font-weight:600">${m.name}</span>
-            <span style="font-size:11px;color:var(--text3)">@${m.username}</span>
-            <span style="background:${isSuspended?'var(--red-dim)':'var(--green-dim)'};color:${isSuspended?'var(--red)':'var(--green)'};font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px">${isSuspended?'Suspended':'Active'}</span>
-            <span style="background:var(--bg3);border:1px solid var(--border);font-size:10px;color:var(--text2);padding:2px 8px;border-radius:20px">${m.plan||'starter'}</span>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <span style="font-size:16px;font-weight:700">${m.name}</span>
+            <span style="background:${isSuspended?'var(--red-dim)':'var(--green-dim)'};color:${isSuspended?'var(--red)':'var(--green)'};font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px">${isSuspended?'🚫 Suspended':'✅ Active'}</span>
+            <span style="background:var(--bg3);border:1px solid var(--border);font-size:10px;color:var(--text3);padding:2px 8px;border-radius:20px">${m.plan||'starter'} · ${limit===0?'unlimited':limit+' agents'}</span>
           </div>
-          <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
-            <span style="font-size:12px;color:var(--text2)">🗂 ${mTours.length} tours</span>
-            <span style="font-size:12px;color:var(--text2)">🎫 ${mBookings.length} bookings</span>
-            <span style="font-size:12px;color:${atLimit?'var(--red)':'var(--text2)'}">👥 ${mAgents.length}/${limit} agents</span>
+          <!-- Login credentials -->
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;display:flex;gap:20px;flex-wrap:wrap">
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Admin Login</div>
+              <div style="font-size:13px;font-family:'DM Mono',monospace;color:var(--text)">${m.username}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Password</div>
+              <div style="font-size:13px;font-family:'DM Mono',monospace;color:var(--text)">${m.code}</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Agents</div>
+              <div style="font-size:13px;font-family:'DM Mono',monospace;color:${atLimit?'var(--red)':'var(--text)'}">${mAgents.length}/${limit===0?'∞':limit}</div>
+            </div>
           </div>
         </div>
         <!-- Actions -->
-        <div style="display:flex;gap:6px;flex-shrink:0">
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
           <button class="btn btn-edit" onclick="openEditMerchant(${m.id})">Edit</button>
-          <button class="btn btn-ghost btn-xs" style="color:${isSuspended?'var(--green)':'var(--red)'};border-color:${isSuspended?'var(--green-dim)':'var(--red-dim)'}" onclick="toggleMerchantStatus(${m.id},'${m.status||'active'}')">${isSuspended?'Activate':'Suspend'}</button>
+          <button class="btn btn-xs" style="background:transparent;border:1px solid ${isSuspended?'var(--green-dim)':'var(--red-dim)'};color:${isSuspended?'var(--green)':'var(--red)'}" onclick="toggleMerchantStatus(${m.id},'${m.status||'active'}')">${isSuspended?'Activate':'Suspend'}</button>
         </div>
-      </div>
-      <!-- Agent limit bar -->
-      <div style="padding:10px 20px;background:var(--bg3);display:flex;align-items:center;gap:12px">
-        <span style="font-size:11px;color:var(--text3);flex-shrink:0">Agent slots</span>
-        <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
-          <div style="height:100%;border-radius:2px;background:${atLimit?'var(--red)':'var(--accent)'};width:${Math.min(100,Math.round(mAgents.length/limit*100))}%"></div>
-        </div>
-        <span style="font-size:11px;font-family:'DM Mono',monospace;color:${atLimit?'var(--red)':'var(--text2)'};flex-shrink:0">${mAgents.length}/${limit}</span>
-        <span style="font-size:11px;color:var(--text3);flex-shrink:0">Plan: <strong style="color:var(--text)">${m.plan||'starter'}</strong></span>
       </div>
     </div>`;
   }).join('');
 
   mc.innerHTML=`
     <div class="page-hdr">
-      <div><div class="page-title">🏢 Platform Dashboard</div><div class="page-sub">Manage all merchant admin accounts</div></div>
+      <div><div class="page-title">🏢 Merchant Accounts</div><div class="page-sub">${merchants.length} merchant${merchants.length!==1?'s':''} · ${merchants.filter(m=>m.status!=='suspended').length} active</div></div>
       <button class="btn btn-primary" onclick="openAddMerchant()">+ Add Merchant</button>
     </div>
-    <!-- Summary stats -->
-    <div class="stats-grid" style="margin-bottom:24px">
-      <div class="stat-card"><div class="stat-label">Total Merchants</div><div class="stat-val c-accent">${merchants.length}</div></div>
-      <div class="stat-card"><div class="stat-label">Active</div><div class="stat-val c-green">${merchants.filter(m=>m.status!=='suspended').length}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Tours</div><div class="stat-val">${tours.length}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Bookings</div><div class="stat-val c-amber">${hist.filter(h=>h.status!=='cancelled').length}</div></div>
-    </div>
-    <div class="sec-bar"><span class="sec-title">Merchant Accounts <span class="cnt-badge">${merchants.length}</span></span></div>
-    ${merchantCards||'<div class="empty-state" style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:40px;text-align:center">No merchants yet. Click <strong>+ Add Merchant</strong> to create one.</div>'}`;
+    ${merchantCards||'<div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:48px;text-align:center;color:var(--text2)">No merchants yet.<br><br><button class="btn btn-primary" onclick="openAddMerchant()">+ Add First Merchant</button></div>'}`;
 }
 
 function rSuperMerchants(mc){ rSuperDashboard(mc); }
