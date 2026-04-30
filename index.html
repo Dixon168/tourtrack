@@ -4348,6 +4348,7 @@ async function rSuperDashboard(mc){
         </div>
         <!-- Actions -->
         <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button class="btn btn-primary btn-xs" onclick="enterMerchant(${m.id})" ${isSuspended?'disabled':''} title="Enter as Admin">→ Enter</button>
           <button class="btn btn-edit" onclick="openEditMerchant(${m.id})">Edit</button>
           <button class="btn btn-xs" style="background:transparent;border:1px solid ${isSuspended?'var(--green-dim)':'var(--red-dim)'};color:${isSuspended?'var(--green)':'var(--red)'}" onclick="toggleMerchantStatus(${m.id},'${m.status||'active'}')">${isSuspended?'Activate':'Suspend'}</button>
         </div>
@@ -4478,6 +4479,73 @@ async function toggleMerchantStatus(id,status){
   merchants=md.data||merchants;
   showTab(activeTab);
   showToast('Merchant '+(newStatus==='suspended'?'suspended':'activated'),newStatus==='suspended'?'var(--red)':'var(--green)');
+}
+
+// ══ ENTER MERCHANT AS ADMIN (support mode) ══
+async function enterMerchant(merchantId){
+  const m=merchants.find(x=>x.id===merchantId);
+  if(!m){alert('Merchant not found.');return;}
+  if(m.status==='suspended'){alert('This merchant is suspended.');return;}
+
+  // Save superadmin session so we can return
+  window._superAdminSession={user:curUser,merchants:[...merchants],users:[...users]};
+
+  // Create virtual admin user for this merchant
+  const adminUser=users.find(u=>u.merchant_id==merchantId&&u.role==='admin')||{
+    id:'virtual_'+merchantId,
+    name:m.name+' Admin',
+    username:m.username,
+    code:m.code,
+    role:'admin',
+    merchant_id:merchantId
+  };
+
+  curUser=adminUser;
+  curMerchant=m;
+
+  // Reload data filtered for this merchant
+  await loadAll();
+  buildNav();renderChip();
+  showTab('tours');
+
+  // Add return button to topbar
+  showToast('👁 Viewing as '+m.name+' · Click "Exit Support" to return','var(--amber)');
+
+  // Add exit support button to topbar right
+  setTimeout(function(){
+    const tr=document.getElementById('topbar-right-extra');
+    if(tr){
+      tr.innerHTML='<button class="btn btn-xs" style="background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber);margin-right:8px" onclick="exitMerchant()">← Exit Support</button>';
+    } else {
+      // Add to topbar
+      const chip=document.getElementById('uchip');
+      if(chip){
+        const exitBtn=document.createElement('button');
+        exitBtn.id='exit-support-btn';
+        exitBtn.className='btn btn-xs';
+        exitBtn.style.cssText='background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber);margin-right:8px';
+        exitBtn.textContent='← Exit Support';
+        exitBtn.onclick=exitMerchant;
+        chip.parentNode.insertBefore(exitBtn,chip);
+      }
+    }
+  },300);
+}
+
+async function exitMerchant(){
+  if(!window._superAdminSession)return;
+  // Restore superadmin session
+  curUser=window._superAdminSession.user;
+  curMerchant=null;
+  window._superAdminSession=null;
+  // Remove exit button
+  const exitBtn=document.getElementById('exit-support-btn');
+  if(exitBtn)exitBtn.remove();
+  // Reload all data as superadmin
+  await loadAll();
+  buildNav();renderChip();
+  showTab('superadmin');
+  showToast('Returned to Platform Admin','var(--green)');
 }
 
 function openOv(id){document.getElementById(id).classList.add('open');}
